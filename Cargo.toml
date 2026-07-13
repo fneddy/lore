@@ -1,0 +1,3 @@
+[workspace]
+members = ["docf-core", "docf-cli"]
+resolver = "2"

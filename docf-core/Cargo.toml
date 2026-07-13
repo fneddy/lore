@@ -1,0 +1,32 @@
+[package]
+name = "docf-core"
+version = "0.1.0"
+edition = "2021"
+rust-version = "1.75"
+
+[dependencies]
+walkdir = "2"
+dirs = "5"
+thiserror = "1"
+tokio = { version = "1", features = ["rt", "sync", "macros"] }
+crossbeam-deque = "0.8"
+aho-corasick = "1"
+async-stream = "0.3"
+futures-core = "0.3"
+html2text = "0.6"
+
+[dev-dependencies]
+tokio = { version = "1", features = ["rt-multi-thread", "macros"] }
+futures-util = "0.3"
+tempfile = "=3.10.1"
+
+# NOTE on pdf-extract / dotext:
+# The spec calls for pdf-extract (PDF) and dotext (docx/pptx/xlsx/epub)
+# as real Extractable implementations. Their transitive dependency
+# chains (lopdf -> indexmap, time, etc.) now require Cargo's
+# `edition2024` feature, which this sandbox's toolchain (rustc/cargo
+# 1.75, the newest available via apt without network access to
+# rustup.rs) does not support. PdfExtractor / OfficeExtractor are
+# implemented as documented stubs (return UnsupportedFormat) so the
+# rest of the pipeline is fully exercised; swap in real dependencies
+# on a modern toolchain (1.80+) to complete them.
