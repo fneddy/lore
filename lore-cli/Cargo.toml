@@ -1,0 +1,43 @@
+[package]
+name = "lore-cli"
+version = "0.1.0"
+edition = "2021"
+license = "BSD-3-Clause"
+
+[[bin]]
+name = "lore"
+path = "src/cli/lore.rs"
+
+[[bin]]
+name = "system-lore"
+path = "src/cli/system_lore.rs"
+
+[[bin]]
+name = "project-lore"
+path = "src/cli/project_lore.rs"
+
+[[bin]]
+name = "mcp-lore"
+path = "src/cli/mcp_lore.rs"
+
+[dependencies]
+lore-core = { path = "../lore-core" }
+clap = { version = "4.5", features = ["derive"] }
+tokio = { version = "1", features = ["rt-multi-thread", "macros"] }
+futures-util = "0.3"
+num_cpus = "1.17.0"
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+log = "0.4"
+env_logger = "0.11"
+rmcp = { version = "2.2.0", features = ["server", "macros", "transport-io", "schemars"] }
+html2text = "0.17"
+epub = "2.1"
+zip = "8.6.0"
+flate2 = "1.0"
+quick-xml = { version = "0.37", features = ["serialize"] }
+infer = "0.19.0"
+gir-parser = "0.1.6"
+
+[target.'cfg(unix)'.dependencies]
+libc = "0.2"

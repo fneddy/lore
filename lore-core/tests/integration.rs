@@ -1,14 +1,30 @@
-use docf_core::{MatchSet, SearchBuilder};
 use futures_util::StreamExt;
+use lore_core::SearchBuilder;
 use std::fs;
 
 fn setup_tree() -> tempfile::TempDir {
     let dir = tempfile::tempdir().unwrap();
-    fs::write(dir.path().join("hashmap_notes.md"), "notes about HashMap and BTreeMap").unwrap();
-    fs::write(dir.path().join("readme.md"), "just a readme, nothing special").unwrap();
-    fs::write(dir.path().join("serde_guide.md"), "serde derive macros for HashMap").unwrap();
+    fs::write(
+        dir.path().join("hashmap_notes.md"),
+        "notes about HashMap and BTreeMap",
+    )
+    .unwrap();
+    fs::write(
+        dir.path().join("readme.md"),
+        "just a readme, nothing special",
+    )
+    .unwrap();
+    fs::write(
+        dir.path().join("serde_guide.md"),
+        "serde derive macros for HashMap",
+    )
+    .unwrap();
     fs::create_dir(dir.path().join("sub")).unwrap();
-    fs::write(dir.path().join("sub/deep.md"), "deeply nested HashMap reference").unwrap();
+    fs::write(
+        dir.path().join("sub/deep.md"),
+        "deeply nested HashMap reference",
+    )
+    .unwrap();
     dir
 }
 
@@ -18,7 +34,7 @@ async fn single_task_sequential_run() {
     let search = SearchBuilder::new()
         .no_builtins()
         .add_path(dir.path())
-        .matching(MatchSet::new().add("HashMap"))
+        .add_pattern("HashMap")
         .build();
 
     let mut stream = search.run();
@@ -27,7 +43,11 @@ async fn single_task_sequential_run() {
         found.push(m.path);
     }
 
-    assert_eq!(found.len(), 3, "hashmap_notes.md, serde_guide.md, sub/deep.md should match");
+    assert_eq!(
+        found.len(),
+        3,
+        "hashmap_notes.md, serde_guide.md, sub/deep.md should match"
+    );
 }
 
 #[tokio::test(flavor = "multi_thread", worker_threads = 4)]
@@ -36,7 +56,7 @@ async fn concurrent_clones_split_work_correctly() {
     let search = SearchBuilder::new()
         .no_builtins()
         .add_path(dir.path())
-        .matching(MatchSet::new().add("HashMap"))
+        .add_pattern("HashMap")
         .build();
 
     const WORKERS: usize = 8;
@@ -63,16 +83,21 @@ async fn concurrent_clones_split_work_correctly() {
     // up walking vs draining.
     all.sort();
     all.dedup();
-    assert_eq!(all.len(), 3, "expected exactly 3 unique matches across all worker clones");
+    assert_eq!(
+        all.len(),
+        3,
+        "expected exactly 3 unique matches across all worker clones"
+    );
 }
 
 #[tokio::test(flavor = "multi_thread")]
-async fn or_group_matches_alternative() {
+async fn or_matches_any_term() {
     let dir = setup_tree();
     let search = SearchBuilder::new()
         .no_builtins()
         .add_path(dir.path())
-        .matching(MatchSet::new().add("nonexistent_term").or().add("readme"))
+        .add_pattern("nonexistent_term")
+        .add_pattern("readme")
         .build();
 
     let mut stream = search.run();
@@ -92,7 +117,7 @@ async fn exclude_extension_filters_out() {
     let search = SearchBuilder::new()
         .no_builtins()
         .add_path(dir.path())
-        .matching(MatchSet::new().add("HashMap"))
+        .add_pattern("HashMap")
         .exclude_extension("txt")
         .build();
 
@@ -110,7 +135,7 @@ async fn include_path_in_search_matches_on_filename() {
     let search = SearchBuilder::new()
         .no_builtins()
         .add_path(dir.path())
-        .matching(MatchSet::new().add("readme"))
+        .add_pattern("readme")
         .include_path_in_search(true)
         .build();
 
@@ -131,7 +156,7 @@ async fn small_walk_yield_interval_still_finds_everything() {
     let search = SearchBuilder::new()
         .no_builtins()
         .add_path(dir.path())
-        .matching(MatchSet::new().add("HashMap"))
+        .add_pattern("HashMap")
         .walk_yield_interval(1) // yield after every single file
         .build();
 
